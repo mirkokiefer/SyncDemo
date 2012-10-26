@@ -1,0 +1,17 @@
+.object {
+  border: solid 1px;
+  margin: 3px;
+}
+.part {
+  margin: 3px;
+  border: solid 1px;
+  padding: 3px;
+}
+.object > .value {
+//  margin-left: 5px;
+}
+
+.value label {
+  min-width: 100px;
+  display: inline-block;
+}
