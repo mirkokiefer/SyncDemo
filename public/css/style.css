@@ -1,3 +1,7 @@
+body {
+  padding: 40px;
+}
+
 .object {
   border: solid 1px;
   margin: 3px;
