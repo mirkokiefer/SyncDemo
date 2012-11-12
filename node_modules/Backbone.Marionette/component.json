@@ -1,0 +1,37 @@
+{
+  "name"        : "backbone.marionette",
+  "description" : "Make your Backbone.js apps dance with a composite application architecture!",
+  "url"         : "http://marionettejs.org",
+  "main"        : "./lib/backbone.marionette.js",
+  "version"     : "1.0.0-beta5",
+
+  "keywords"     : [
+    "backbone",
+    "framework",
+    "client",
+    "browser",
+    "composite"
+  ],
+  "author"       : {
+    "name"  : "Derick Bailey",
+    "email" : "derickbailey@gmail.com"
+  },
+  "contributors" : [
+    {
+      "name"  : "Jarrod Overson",
+      "email" : "jsoverson@gmail.com"
+    },
+    {
+      "name"  : "Tony Abou-Assaleh",
+      "email" : "taa@eits.ca"
+    },
+    {
+      "name"  : "Matt Briggs",
+      "email" : "matt@mattbriggs.net"
+    }
+  ],
+  "dependencies" : {
+    "backbone" : "latest"
+  }
+}
+
