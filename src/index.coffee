@@ -46,16 +46,7 @@ commitModels = (models) ->
           console.log name, res
   console.log delta
 
-addTestData = (branch) ->
-  data = 
-    "a/b": JSON.stringify(value: "test1")
-    "b": JSON.stringify(value: "test2")
-  branch.commit data
-
 main = ->
-  addTestData branch
-  resetEntries()
-
   entries.on 'add', (model) ->
     model.on 'change', -> commitModels [model]
     commitModels [model]
