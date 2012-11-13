@@ -13,7 +13,7 @@ branch = repo.branch()
 Entry = Backbone.Model.extend idAttribute: 'path'
 EntryList = Backbone.Collection.extend model: Entry
 
-paths = new EntryList
+entries = new EntryList
 
 resetEntries = ->
   data = branch.allPaths()
@@ -22,7 +22,7 @@ resetEntries = ->
     entry.set entry.idAttribute, path
     entry.on 'change', -> commitModels [entry]
     entry
-  paths.reset models
+  entries.reset models
 
 commitModels = (models) ->
   data = {}
@@ -41,23 +41,23 @@ main = ->
   addTestData branch
   resetEntries()
 
-  paths.on 'add', (model) ->
+  entries.on 'add', (model) ->
     model.on 'change', -> commitModels [model]
     commitModels [model]
 
-  entryListView = new EntryListView collection: paths
+  entryListView = new EntryListView collection: entries
   entryListView.on 'selected', (entry) ->
     entryView = new EntryView model: entry
     entryView.on 'save', (newEntry) ->
-      entry.set newEntry.toJSON()
+      entry.set newEntry
     renderView entryView, '#detail'
 
   $('#btn-add').click ->
     entryView = new EntryView()
     entryView.on 'save', (newEntry) ->
-      paths.add newEntry
+      entries.add newEntry
     renderView entryView, '#detail'
 
-  renderView entryListView, '#paths'
+  renderView entryListView, '#entries'
 
 $(main)
