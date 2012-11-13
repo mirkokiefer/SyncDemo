@@ -9,6 +9,8 @@ renderView = (view, selector) -> $(selector).html view.render().el
 
 repo = new Repository
 branch = repo.branch()
+remotes =
+  me: null
 
 Entry = Backbone.Model.extend idAttribute: 'path'
 EntryList = Backbone.Collection.extend model: Entry
@@ -30,6 +32,19 @@ commitModels = (models) ->
     data[model.id] = JSON.stringify omit(model.toJSON(), model.idAttribute)
   branch.commit data
   console.log branch.head, data
+  delta = repo.deltaData branch.deltaHashs from: remotes.me
+  $.post '/delta', {trees: delta.trees}, ->
+    remotes.me = branch.head
+    $.ajax(type: 'PUT', url:'/head/'+$('#client').val(), data:hash:branch.head)
+    $.get '/head', (res) ->
+      res.heads.map ({name, head}) ->
+        remotes[name] = head
+        $.get '/delta?from='+remotes.me + '&to=' + head, (res) ->
+          repo.treeStore.writeAll res.trees
+          branch.merge ref: head
+          resetEntries()
+          console.log name, res
+  console.log delta
 
 addTestData = (branch) ->
   data = 

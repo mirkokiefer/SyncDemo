@@ -1,6 +1,7 @@
 express    = require 'express'
 path       = require 'path'
 browserify = require 'browserify'
+syncnode = require 'syncnode'
 
 app = module.exports = express()
 
@@ -11,6 +12,7 @@ app.configure ->
   app.use app.router
   app.use browserify __dirname + '/src/index.coffee', debug: true, watch: true
   app.use express.static path.join(__dirname, 'public')
+  app.use syncnode()
 
 app.configure 'development', ->
   app.use express.errorHandler dumpExceptions: true, showStack: true
