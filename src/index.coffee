@@ -1,42 +1,63 @@
 window.jQuery = window.$ = require 'jquery-browserify'
 window.Backbone = require 'backbone'
 Backbone.setDomLibrary($)
-window._ = require 'underscore'
-{render} = require 'mustache'
-template = (templateString) -> (data) -> render templateString, data
+{omit} = window._ = require 'underscore'
 {Repository} = require 'synclib'
-{List, ListItem} = require 'backbone-listview'
+{PathView, EntryView, EntryListView} = require './views'
+
+renderView = (view, selector) -> $(selector).html view.render().el
+
+repo = new Repository
+branch = repo.branch()
+
+Entry = Backbone.Model.extend idAttribute: 'path'
+EntryList = Backbone.Collection.extend model: Entry
+
+paths = new EntryList
+
+resetEntries = ->
+  data = branch.allPaths()
+  models = data.map ({path, value}) ->
+    entry = new Entry JSON.parse value
+    entry.set entry.idAttribute, path
+    entry.on 'change', -> commitModels [entry]
+    entry
+  paths.reset models
+
+commitModels = (models) ->
+  data = {}
+  for model in models
+    data[model.id] = JSON.stringify omit(model.toJSON(), model.idAttribute)
+  branch.commit data
+  console.log branch.head, data
+
+addTestData = (branch) ->
+  data = 
+    "a/b": JSON.stringify(value: "test1")
+    "b": JSON.stringify(value: "test2")
+  branch.commit data
 
 main = ->
-  repo = new Repository
-  branch = repo.branch()
+  addTestData branch
+  resetEntries()
 
-  data1 = 
-    "a/b": "test1"
-    "a/c": "test2"
-    "d": "test3"
-  data2 =
-    "a/b": "test1modified"
-    "e/f/g": "test4"
-  branch.commit data1
-  branch.commit data2
-  Entry = Backbone.Model.extend {}
-  EntryList = Backbone.Collection.extend model: Entry
+  paths.on 'add', (model) ->
+    model.on 'change', -> commitModels [model]
+    commitModels [model]
 
-  paths = new EntryList
-  entry1 = new Entry path: 'test1', value: 'value1'
-  entry2 = new Entry path: 'test2', value: 'value2'
-  console.log branch.allPaths()
-  paths.reset branch.allPaths()
+  entryListView = new EntryListView collection: paths
+  entryListView.on 'selected', (entry) ->
+    entryView = new EntryView model: entry
+    entryView.on 'save', (newEntry) ->
+      entry.set newEntry.toJSON()
+    renderView entryView, '#detail'
 
-  PathView = ListItem.extend
-    tagName: 'li'
-    template: template '{{path}}'
+  $('#btn-add').click ->
+    entryView = new EntryView()
+    entryView.on 'save', (newEntry) ->
+      paths.add newEntry
+    renderView entryView, '#detail'
 
-  pathListView = new List itemView: PathView, collection: paths
-  pathListView.on 'selected', (entry) ->
-    $('#note').text entry.get 'value'
-
-  $('#master').html pathListView.render().el
+  renderView entryListView, '#paths'
 
 $(main)
