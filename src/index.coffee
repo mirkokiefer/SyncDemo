@@ -11,6 +11,7 @@ repo = new Repository
 branch = repo.branch()
 remotes =
   me: null
+clientName = -> $('#client').val()
 
 Entry = Backbone.Model.extend idAttribute: 'path'
 EntryList = Backbone.Collection.extend model: Entry
@@ -28,6 +29,7 @@ resetEntries = ->
     trackChanges entry
     entry
   entries.reset models
+  entries.add changedEntries.models
 
 commitChanges = ->
   data = {}
@@ -36,9 +38,10 @@ commitChanges = ->
   branch.commit data
   changedEntries.reset()
   delta = repo.deltaData branch.deltaHashs from: remotes.me
+  console.log 'send delta', delta
   $.post '/delta', {trees: delta.trees}, ->
     remotes.me = branch.head
-    $.ajax(type: 'PUT', url:'/head/'+$('#client').val(), data:hash:branch.head)
+    $.ajax(type: 'PUT', url:'/head/'+clientName(), data:hash:branch.head)
 
 fetchChanges = ->
   $.get '/head', (res) ->
@@ -49,7 +52,7 @@ fetchChanges = ->
         repo.treeStore.writeAll res.trees
         branch.merge ref: head
         resetEntries()
-        console.log name, res
+        console.log 'delta from', name, res
 
 main = ->
   entries.on 'add', (model) ->
