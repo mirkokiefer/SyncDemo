@@ -1,7 +1,7 @@
 window.jQuery = window.$ = require 'jquery-browserify'
 window.Backbone = require 'backbone'
 Backbone.setDomLibrary($)
-{omit} = window._ = require 'underscore'
+{omit, difference} = window._ = require 'underscore'
 {Repository} = require 'synclib'
 {PathView, EntryView, EntryListView} = require './views'
 
@@ -9,8 +9,7 @@ renderView = (view, selector) -> $(selector).html view.render().el
 
 repo = new Repository
 branch = repo.branch()
-remotes =
-  me: null
+remotes = {}
 clientName = -> $('#client').val()
 
 Entry = Backbone.Model.extend idAttribute: 'path'
@@ -31,13 +30,21 @@ resetEntries = ->
   entries.reset models
   entries.add changedEntries.models
 
+deltaData = ->
+  delta = branch.deltaHashs from: remotes.me
+  for remote, remoteHead of remotes
+    knownPatch = repo.deltaHashs from: remotes.me, to: remoteHead
+    delta.trees = difference delta.trees, knownPatch.trees
+    delta.data = difference delta.data, knownPatch.data
+  repo.deltaData delta
+
 commitChanges = ->
   data = {}
   for model in changedEntries.models
     data[model.id] = JSON.stringify omit(model.toJSON(), model.idAttribute)
   branch.commit data
   changedEntries.reset()
-  delta = repo.deltaData branch.deltaHashs from: remotes.me
+  delta = deltaData()
   console.log 'send delta', delta
   $.post '/delta', {trees: delta.trees}, ->
     remotes.me = branch.head
