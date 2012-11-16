@@ -16,40 +16,45 @@ Entry = Backbone.Model.extend idAttribute: 'path'
 EntryList = Backbone.Collection.extend model: Entry
 
 entries = new EntryList
+changedEntries = new Backbone.Collection
+changed = (model) -> changedEntries.add model
+trackChanges = (model) -> model.on 'change', -> changed model
 
 resetEntries = ->
   data = branch.allPaths()
   models = data.map ({path, value}) ->
     entry = new Entry JSON.parse value
     entry.set entry.idAttribute, path
-    entry.on 'change', -> commitModels [entry]
+    trackChanges entry
     entry
   entries.reset models
 
-commitModels = (models) ->
+commitChanges = ->
   data = {}
-  for model in models
+  for model in changedEntries.models
     data[model.id] = JSON.stringify omit(model.toJSON(), model.idAttribute)
   branch.commit data
-  console.log branch.head, data
+  changedEntries.reset()
   delta = repo.deltaData branch.deltaHashs from: remotes.me
   $.post '/delta', {trees: delta.trees}, ->
     remotes.me = branch.head
     $.ajax(type: 'PUT', url:'/head/'+$('#client').val(), data:hash:branch.head)
-    $.get '/head', (res) ->
-      res.heads.map ({name, head}) ->
-        remotes[name] = head
-        $.get '/delta?from='+remotes.me + '&to=' + head, (res) ->
-          repo.treeStore.writeAll res.trees
-          branch.merge ref: head
-          resetEntries()
-          console.log name, res
-  console.log delta
+
+fetchChanges = ->
+  $.get '/head', (res) ->
+    res.heads.map ({name, head}) ->
+      remotes[name] = head
+      fromString = if remotes.me then 'from='+remotes.me + '&' else ''
+      $.get '/delta?' + fromString + 'to=' + head, (res) ->
+        repo.treeStore.writeAll res.trees
+        branch.merge ref: head
+        resetEntries()
+        console.log name, res
 
 main = ->
   entries.on 'add', (model) ->
-    model.on 'change', -> commitModels [model]
-    commitModels [model]
+    trackChanges model
+    changed model
 
   entryListView = new EntryListView collection: entries
   entryListView.on 'selected', (entry) ->
@@ -63,6 +68,8 @@ main = ->
     entryView.on 'save', (newEntry) ->
       entries.add newEntry
     renderView entryView, '#detail'
+  $('#btn-commit').click -> commitChanges()
+  $('#btn-fetch').click -> fetchChanges()
 
   renderView entryListView, '#entries'
 
