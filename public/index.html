@@ -4,14 +4,36 @@
     <link rel="stylesheet" href="/css/style.css"/>
     <link rel="stylesheet" href="/css/bootstrap.css"/>
     <script type="text/javascript" src="/browserify.js"></script>
+    <script type="text/javascript" src="/js/bootstrap.js"></script>
   </head>
   <body>
+    <div id="setup-modal" class="modal">
+      <div class="modal-header">
+        <h3>Setup</h3>
+      </div>
+      <div class="modal-body">
+        <form class="form-inline">
+          <p>Enter your name to get started:</p>
+          <input type="text" id="setup-client" placeholder="name"/>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <a href="#" class="btn btn-primary submit">Submit</a>
+      </div>
+    </div>
     <div class="container">
-      <form class="form-inline">
-        <input type="text" id="client" placeholder="client name"/>
-        <a id="btn-commit" class="btn" href="#">Commit changes</a>
-        <a id="btn-fetch" class="btn" href="#">Fetch changes</a>
-      </form>
+      <div class="row">
+        <div class="span9">
+          <form class="form-inline">
+            <a id="btn-commit" class="btn" href="#">Commit</a>
+            <a id="btn-push" class="btn" href="#">Push</a>
+            <a id="btn-fetch" class="btn" href="#">Fetch</a>
+          </form>
+        </div>
+        <div class="span3">
+          Client: <span id="client-name"></span>
+        </div>
+      </div>
       <div class="row">
         <div id="master" class="span4">
           <div id="entries"></div>
