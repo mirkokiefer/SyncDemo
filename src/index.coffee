@@ -5,6 +5,7 @@ Backbone.setDomLibrary($)
 {omit, difference, values, pluck} = window._ = require 'underscore'
 {Repository} = require 'synclib'
 {PathView, EntryView, EntryListView} = require './views'
+{post, put, get} = require './utils'
 
 Entry = Backbone.Model.extend idAttribute: 'path'
 EntryList = Backbone.Collection.extend model: Entry
@@ -14,8 +15,8 @@ renderView = (view, selector) -> $(selector).html view.render().el
 resetCollection = (collection, branch) ->
   data = branch.allPaths()
   models = data.map ({path, value}) ->
-    entry = new Entry JSON.parse value
-    entry.set entry.idAttribute, path
+    entry = JSON.parse value
+    entry.path = path
     entry
   collection.reset models
 
@@ -30,29 +31,23 @@ class SyncClient
     @remotes = {}
   fetch: (cb) ->
     obj = this
-    $.get '/head', ({heads}) ->
+    get '/head', (err, {heads}) ->
       from = JSON.stringify values(obj.remotes)
       to = JSON.stringify pluck(heads, 'head')
-      $.get '/delta?from=' + from + '&to=' + to, (res) ->
+      get '/delta?from=' + from + '&to=' + to, (err, res) ->
         console.log 'delta received', res
         obj.branch.repo.treeStore.writeAll res.trees
         for {name, head} in heads
           obj.branch.merge ref: head
           obj.remotes[name] = head
         cb null
-  push: ->
+  push: (cb) ->
     obj = this
     delta = @branch.repo.deltaData @branch.deltaHashs from: values(@remotes)
     console.log 'send delta', delta
-    $.ajax
-      type:'POST'
-      url:'/delta'
-      data: JSON.stringify {trees: delta.trees}
-      contentType:"application/json; charset=utf-8"
-      dataType:"json"
-      success: ->
-        obj.remotes[obj.name] = obj.branch.head
-        $.ajax(type: 'PUT', url:'/head/'+obj.name, data: {hash:obj.branch.head})
+    post '/delta', {trees: delta.trees}, ->
+      obj.remotes[obj.name] = obj.branch.head
+      put '/head/'+obj.name, {hash:obj.branch.head}, -> if cb then cb null
 
 init = (name) ->
   repo = new Repository
