@@ -1,7 +1,8 @@
 window.jQuery = window.$ = require 'jquery-browserify'
 window.Backbone = require 'backbone'
+async = require 'async'
 Backbone.setDomLibrary($)
-{omit, difference} = window._ = require 'underscore'
+{omit, difference, values, pluck} = window._ = require 'underscore'
 {Repository} = require 'synclib'
 {PathView, EntryView, EntryListView} = require './views'
 
@@ -30,36 +31,29 @@ resetEntries = ->
   entries.reset models
   entries.add changedEntries.models
 
-deltaData = ->
-  delta = branch.deltaHashs from: remotes.me
-  for remote, remoteHead of remotes
-    knownPatch = repo.deltaHashs from: remotes.me, to: remoteHead
-    delta.trees = difference delta.trees, knownPatch.trees
-    delta.data = difference delta.data, knownPatch.data
-  repo.deltaData delta
-
 commitChanges = ->
   data = {}
   for model in changedEntries.models
     data[model.id] = JSON.stringify omit(model.toJSON(), model.idAttribute)
   branch.commit data
   changedEntries.reset()
-  delta = deltaData()
+  delta = repo.deltaData branch.deltaHashs from: values(remotes)
   console.log 'send delta', delta
   $.post '/delta', {trees: delta.trees}, ->
     remotes.me = branch.head
     $.ajax(type: 'PUT', url:'/head/'+clientName(), data:hash:branch.head)
 
 fetchChanges = ->
-  $.get '/head', (res) ->
-    res.heads.map ({name, head}) ->
-      remotes[name] = head
-      fromString = if remotes.me then 'from='+remotes.me + '&' else ''
-      $.get '/delta?' + fromString + 'to=' + head, (res) ->
-        repo.treeStore.writeAll res.trees
+  $.get '/head', ({heads}) ->
+    from = JSON.stringify values(remotes)
+    to = JSON.stringify pluck(heads, 'head')
+    $.get '/delta?from=' + from + '&to=' + to, (res) ->
+      console.log 'delta received', res
+      repo.treeStore.writeAll res.trees
+      for {name, head} in heads
         branch.merge ref: head
-        resetEntries()
-        console.log 'delta from', name, res
+        remotes[name] = head
+      resetEntries()
 
 main = ->
   entries.on 'add', (model) ->

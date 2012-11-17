@@ -15,8 +15,8 @@
     "underscore": "~1.4.2",
     "Backbone.Marionette": "git://github.com/marionettejs/backbone.marionette.git",
     "backbone-forms": "~0.10.0",
-    "synclib": "0.1.4",
-    "syncnode": "0.0.2",
+    "synclib": "0.1.5",
+    "syncnode": "0.0.4",
     "backbone-listview": "0.0.1",
     "mustache": "*"
   },
