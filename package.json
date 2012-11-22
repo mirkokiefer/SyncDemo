@@ -1,6 +1,6 @@
 {
   "name": "PeerCamp",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "description": "Collaborate on projects.",
   "scripts": {
     "test": "mocha"
@@ -15,8 +15,8 @@
     "underscore": "~1.4.2",
     "Backbone.Marionette": "git://github.com/marionettejs/backbone.marionette.git",
     "backbone-forms": "~0.10.0",
-    "synclib": "0.1.5",
-    "syncnode": "0.0.4",
+    "synclib": "0.1.6",
+    "syncnode": "0.0.5",
     "backbone-listview": "0.0.1",
     "mustache": "*"
   },

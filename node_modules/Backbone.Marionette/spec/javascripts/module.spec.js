@@ -2,13 +2,26 @@ describe("application modules", function(){
   "use strict";
 
   describe("when specifying a module on an application", function(){
-    var MyApp, myModule;
+    var MyApp, myModule, initializeBefore, initializeAfter;
 
     beforeEach(function(){
+      initializeBefore = jasmine.createSpy("before handler");
+      initializeAfter = jasmine.createSpy("after handler");
+
       MyApp = new Backbone.Marionette.Application();
       myModule = MyApp.module("MyModule");
+      myModule.on("initialize:before", initializeBefore);
+      myModule.on("initialize:after", initializeAfter);
 
       myModule.start();
+    });
+
+    it("should notify me before initialization starts", function(){
+      expect(initializeBefore).toHaveBeenCalled();
+    });
+
+    it("should notify me after initialization", function(){
+      expect(initializeAfter).toHaveBeenCalled();
     });
 
     it("should add an object of that name to the app", function(){
@@ -50,7 +63,7 @@ describe("application modules", function(){
     describe("and the parent module does not exist", function(){
       beforeEach(function(){
         MyApp = new Backbone.Marionette.Application();
-        lastModule = MyApp.module("Parent.Child");
+        lastModule = MyApp.module("Parent.Child.GrandChild");
 
         lastModule.start();
       });
@@ -63,14 +76,50 @@ describe("application modules", function(){
         expect(MyApp.Parent.Child).not.toBeUndefined;
       });
 
+      it("should create the grandchild module on the parent module", function(){
+        expect(MyApp.Parent.Child.GrandChild).not.toBeUndefined;
+      });
+
       it("should return the last sub-module in the list", function(){
-        expect(lastModule).toBe(MyApp.Parent.Child);
+        expect(lastModule).toBe(MyApp.Parent.Child.GrandChild);
+      });
+    });
+
+    describe("When defining a grand-child module with an un-defined child, and starting the parent directly", function(){
+      var handler;
+
+      beforeEach(function(){
+        handler = jasmine.createSpy("initializer");
+
+        MyApp = new Backbone.Marionette.Application();
+
+        MyApp.module("Parent.Child.GrandChild", function(mod){
+          mod.addInitializer(handler);
+        });
+
+        MyApp.module("Parent").start();
+      });
+
+      it("should create the parent module on the application", function(){
+        expect(MyApp.Parent).not.toBeUndefined;
+      });
+
+      it("should create the child module on the parent module", function(){
+        expect(MyApp.Parent.Child).not.toBeUndefined;
+      });
+
+      it("should create the grandchild module on the parent module", function(){
+        expect(MyApp.Parent.Child.GrandChild).not.toBeUndefined;
+      });
+
+      it("should start the grandchild module", function(){
+        expect(handler).toHaveBeenCalled();
       });
     });
 
     describe("and a module definition callback is provided", function(){
       var definition;
-      
+
       beforeEach(function(){
         definition = jasmine.createSpy();
 
