@@ -37,6 +37,7 @@ class SyncClient
       get '/delta?from=' + from + '&to=' + to, (err, res) ->
         console.log 'delta received', res
         obj.branch.repo.treeStore.writeAll res.trees
+        obj.branch.repo.commitStore.writeAll res.commits
         for {name, head} in heads
           obj.branch.merge ref: head
           obj.remotes[name] = head
@@ -45,7 +46,7 @@ class SyncClient
     obj = this
     delta = @branch.repo.deltaData @branch.deltaHashs from: values(@remotes)
     console.log 'send delta', delta
-    post '/delta', {trees: delta.trees}, ->
+    post '/delta', delta, ->
       obj.remotes[obj.name] = obj.branch.head
       put '/head/'+obj.name, {hash:obj.branch.head}, -> if cb then cb null
 

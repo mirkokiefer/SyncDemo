@@ -14,8 +14,8 @@
     "jquery-browserify": "~1.8.1",
     "underscore": "~1.4.2",
     "backbone-forms": "~0.10.0",
-    "synclib": "0.1.6",
-    "syncnode": "0.0.5",
+    "synclib": "0.2.0",
+    "syncnode": "0.1.0",
     "backbone-listview": "0.0.1",
     "mustache": "*"
   },
