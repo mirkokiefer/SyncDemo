@@ -29,13 +29,12 @@ createApp = ({blobStore, repository, headStore}={}) ->
   app.get '/delta', (req, res) ->
     [from, to] = for each in [req.query.from, req.query.to]
       if each then JSON.parse each else []
-    delta = repository.deltaData repository.deltaHashs from: from, to: to
-    res.send delta
+    repository.delta from: from, to: to, (err, delta) ->
+      res.send delta
 
   app.post '/delta', (req, res) ->
-    treeHashs = repository.treeStore.writeAll req.body.trees
-    commitHashs = repository.commitStore.writeAll req.body.commits
-    res.send treeHashs: treeHashs, commitHashs: commitHashs
+    repository.applyDelta req.body, ->
+      res.send ok: 'success'
 
   app.put '/head/:branch', (req, res) ->
     headStore.write req.params.branch, req.body.hash

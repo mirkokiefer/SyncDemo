@@ -48,7 +48,7 @@
     });
     app.get('/changes', function(req, res) {});
     app.get('/delta', function(req, res) {
-      var delta, each, from, to, _ref2;
+      var each, from, to, _ref2;
       _ref2 = (function() {
         var _i, _len, _ref2, _results;
         _ref2 = [req.query.from, req.query.to];
@@ -63,19 +63,18 @@
         }
         return _results;
       })(), from = _ref2[0], to = _ref2[1];
-      delta = repository.deltaData(repository.deltaHashs({
+      return repository.delta({
         from: from,
         to: to
-      }));
-      return res.send(delta);
+      }, function(err, delta) {
+        return res.send(delta);
+      });
     });
     app.post('/delta', function(req, res) {
-      var commitHashs, treeHashs;
-      treeHashs = repository.treeStore.writeAll(req.body.trees);
-      commitHashs = repository.commitStore.writeAll(req.body.commits);
-      return res.send({
-        treeHashs: treeHashs,
-        commitHashs: commitHashs
+      return repository.applyDelta(req.body, function() {
+        return res.send({
+          ok: 'success'
+        });
       });
     });
     app.put('/head/:branch', function(req, res) {

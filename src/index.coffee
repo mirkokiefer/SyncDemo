@@ -13,18 +13,18 @@ EntryList = Backbone.Collection.extend model: Entry
 renderView = (view, selector) -> $(selector).html view.render().el
 
 resetCollection = (collection, branch) ->
-  data = branch.allPaths()
-  models = data.map ({path, value}) ->
-    entry = JSON.parse value
-    entry.path = path
-    entry
-  collection.reset models
+  branch.allPaths (err, data) ->
+    models = data.map ({path, value}) ->
+      entry = JSON.parse value
+      entry.path = path
+      entry
+    collection.reset models
 
-commitModels = (models, branch) ->
+commitModels = (models, branch, cb) ->
   data = {}
   for model in models
     data[model.id] = JSON.stringify omit(model.toJSON(), model.idAttribute)
-  branch.commit data
+  branch.commit data, cb
 
 class SyncClient
   constructor: ({@branch, @name}={}) ->
@@ -36,19 +36,18 @@ class SyncClient
       to = JSON.stringify pluck(heads, 'head')
       get '/delta?from=' + from + '&to=' + to, (err, res) ->
         console.log 'delta received', res
-        obj.branch.repo.treeStore.writeAll res.trees
-        obj.branch.repo.commitStore.writeAll res.commits
-        for {name, head} in heads
-          obj.branch.merge ref: head
-          obj.remotes[name] = head
-        cb null
+        obj.branch.repo.applyDelta res, ->
+          mergeEach = ({name, head}, cb) ->
+            obj.branch.merge ref: head, ->
+              obj.remotes[name] = head
+              cb null
+          async.forEach heads, mergeEach, cb
   push: (cb) ->
     obj = this
-    delta = @branch.repo.deltaData @branch.deltaHashs from: values(@remotes)
-    console.log 'send delta', delta
-    post '/delta', delta, ->
-      obj.remotes[obj.name] = obj.branch.head
-      put '/head/'+obj.name, {hash:obj.branch.head}, -> if cb then cb null
+    @branch.delta from: values(@remotes), (err, delta) ->
+      post '/delta', delta, ->
+        obj.remotes[obj.name] = obj.branch.head
+        put '/head/'+obj.name, {hash:obj.branch.head}, -> cb null
 
 init = (name) ->
   repo = new Repository
@@ -79,9 +78,9 @@ init = (name) ->
       entries.add newEntry
     renderView entryView, '#detail'
   $('#btn-commit').click ->
-    commitModels changedEntries.models, branch
-    changedEntries.reset()
-  $('#btn-push').click -> syncClient.push()
+    commitModels changedEntries.models, branch, ->
+      changedEntries.reset()
+  $('#btn-push').click -> syncClient.push ->
   $('#btn-fetch').click ->
     syncClient.fetch -> resetCollection entries, branch
 

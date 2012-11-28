@@ -1,6 +1,6 @@
 {
   "name": "SyncDemo",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Collaborate on projects.",
   "scripts": {
     "test": "mocha"
@@ -14,8 +14,8 @@
     "jquery-browserify": "~1.8.1",
     "underscore": "~1.4.2",
     "backbone-forms": "~0.10.0",
-    "synclib": "0.2.0",
-    "syncnode": "0.1.0",
+    "synclib": "0.3.1",
+    "syncnode": "0.1.1",
     "backbone-listview": "0.0.1",
     "mustache": "*"
   },
