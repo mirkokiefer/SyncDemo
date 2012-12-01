@@ -17,7 +17,10 @@
     "synclib": "0.3.1",
     "syncnode": "0.1.1",
     "backbone-listview": "0.0.1",
-    "mustache": "*"
+    "mustache": "*",
+    "pluggable-store": "~0.1.2",
+    "pluggable-cache": "0.0.1",
+    "content-addressable": "~0.1.0"
   },
   "devDependencies": {
     "coffee-script": "~1.3.3"
