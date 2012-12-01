@@ -8,15 +8,15 @@
       this.data = {};
     }
 
-    Memory.prototype.createdStore = function(cb) {
+    Memory.prototype.exists = function(cb) {
       return cb(null, true);
     };
 
-    Memory.prototype.createStore = function(cb) {
+    Memory.prototype.create = function(cb) {
       return cb(null);
     };
 
-    Memory.prototype.removeStore = function(cb) {
+    Memory.prototype.destroy = function(cb) {
       this.data = {};
       return cb(null);
     };

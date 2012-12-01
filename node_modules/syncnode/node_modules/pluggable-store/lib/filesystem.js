@@ -18,17 +18,17 @@
       this.rootPath = rootPath;
     }
 
-    FileSystem.prototype.createdStore = function(cb) {
+    FileSystem.prototype.exists = function(cb) {
       return fs.exists(this.rootPath, function(exists) {
         return cb(null, exists);
       });
     };
 
-    FileSystem.prototype.createStore = function(cb) {
+    FileSystem.prototype.create = function(cb) {
       return fs.mkdir(this.rootPath, cb);
     };
 
-    FileSystem.prototype.removeStore = function(cb) {
+    FileSystem.prototype.destroy = function(cb) {
       return removeDir(this.rootPath, cb);
     };
 

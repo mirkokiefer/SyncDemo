@@ -13,7 +13,6 @@ class ContentAddressable
     @store.writeAll keyValues, (err) -> cb err, hashs
   readAll: (hashs, cb) -> @store.readAll hashs, cb
 
-module.exports =
-  Interface: ContentAddressable
-  memory: -> new ContentAddressable store: require('pluggable-store').memory()
-  fileSystem: (args...) -> new ContentAddressable store: require('pluggable-store').server.fileSystem(args...)
+ContentAddressable.memory = -> new ContentAddressable store: require('pluggable-store').memory()
+ContentAddressable.fileSystem = (args...) -> new ContentAddressable store: require('pluggable-store').server.fileSystem(args...)
+module.exports = ContentAddressable

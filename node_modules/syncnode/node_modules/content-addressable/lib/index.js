@@ -59,20 +59,20 @@
 
   })();
 
-  module.exports = {
-    Interface: ContentAddressable,
-    memory: function() {
-      return new ContentAddressable({
-        store: require('pluggable-store').memory()
-      });
-    },
-    fileSystem: function() {
-      var args, _ref;
-      args = 1 <= arguments.length ? __slice.call(arguments, 0) : [];
-      return new ContentAddressable({
-        store: (_ref = require('pluggable-store').server).fileSystem.apply(_ref, args)
-      });
-    }
+  ContentAddressable.memory = function() {
+    return new ContentAddressable({
+      store: require('pluggable-store').memory()
+    });
   };
+
+  ContentAddressable.fileSystem = function() {
+    var args, _ref;
+    args = 1 <= arguments.length ? __slice.call(arguments, 0) : [];
+    return new ContentAddressable({
+      store: (_ref = require('pluggable-store').server).fileSystem.apply(_ref, args)
+    });
+  };
+
+  module.exports = ContentAddressable;
 
 }).call(this);

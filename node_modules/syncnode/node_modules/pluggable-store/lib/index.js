@@ -15,26 +15,26 @@
       this.adapter = _arg.adapter;
     }
 
-    PluggableStore.prototype.createdStore = function(cb) {
-      return this.adapter.createdStore(cb);
+    PluggableStore.prototype.exists = function(cb) {
+      return this.adapter.exists(cb);
     };
 
-    PluggableStore.prototype.createStore = function(cb) {
-      return this.adapter.createStore(cb);
+    PluggableStore.prototype.create = function(cb) {
+      return this.adapter.create(cb);
     };
 
-    PluggableStore.prototype.removeStore = function(cb) {
-      return this.adapter.removeStore(cb);
+    PluggableStore.prototype.destroy = function(cb) {
+      return this.adapter.destroy(cb);
     };
 
-    PluggableStore.prototype.ensureStore = function(cb) {
+    PluggableStore.prototype.ensureExists = function(cb) {
       var obj;
       obj = this;
-      return this.createdStore(function(err, created) {
+      return this.exists(function(err, created) {
         if (created) {
           return cb(null);
         } else {
-          return obj.createStore(cb);
+          return obj.create(cb);
         }
       });
     };

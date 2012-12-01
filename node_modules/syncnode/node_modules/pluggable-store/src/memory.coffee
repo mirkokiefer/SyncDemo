@@ -1,9 +1,9 @@
 
 class Memory
   constructor: () -> @data = {}
-  createdStore: (cb) -> cb null, true
-  createStore: (cb) -> cb null
-  removeStore: (cb) -> @data = {}; cb null
+  exists: (cb) -> cb null, true
+  create: (cb) -> cb null
+  destroy: (cb) -> @data = {}; cb null
   write: (path, data, cb) -> @data[path] = data; cb null
   read: (path, cb) -> cb null, @data[path]
   remove: (path, cb) -> delete @data[path]; cb null

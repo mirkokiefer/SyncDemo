@@ -3,12 +3,12 @@ async = require 'async'
 
 class PluggableStore extends require('eventemitter2').EventEmitter2
   constructor: ({@adapter}) ->
-  createdStore: (cb) -> @adapter.createdStore cb
-  createStore: (cb) -> @adapter.createStore cb
-  removeStore: (cb) -> @adapter.removeStore cb
-  ensureStore: (cb) ->
+  exists: (cb) -> @adapter.exists cb
+  create: (cb) -> @adapter.create cb
+  destroy: (cb) -> @adapter.destroy cb
+  ensureExists: (cb) ->
     obj = this
-    @createdStore (err, created) -> if created then cb null else obj.createStore cb
+    @exists (err, created) -> if created then cb null else obj.create cb
   write: (key, value, cb) ->
     obj = this
     @emit 'write', key, value
